@@ -10,22 +10,16 @@ import './index.css';
  * In JS classes we need to call super when defining the constructor of
  * a subclass, react component classes with constructor should start with super(props)
  */
-class Square extends React.Component {
-  // render a single button
-  render() {
-    {/*by calling this.setState from the onclick handler, react
-    rerenders that Square whenever its button is clicked.
-    After the update, Square's this.state.value will be 'X'*/}
-    return (
-      <button 
-        className="square" 
-        onClick={() => this.props.onClick()}
-      >
-        {this.props.value}
-      </button>
-    );
-  }
-}
+
+ 
+ // make the Square component into a function component because Square doesnt have its own state
+ function Square(props) {
+   return (
+     <button className="square" onClick={props.onClick}>
+       {props.value}
+     </button>
+   );
+ }
 
 /**
  * To determine winner we need to know the game's state, we should store
@@ -43,6 +37,9 @@ class Board extends React.Component {
   }
 
   // handleClick(): fills the square i in the array defined in the constructor with 'X'
+  // slice() creates a copy of the squares array to modify instead of modifying existing array
+  // why copy? avoiding direct mutation lets us keep previous versions of the game's history intact
+  // and reuse them late
   handleClick(i) {
     const squares = this.state.squares.slice();
     squares[i] = 'X';
