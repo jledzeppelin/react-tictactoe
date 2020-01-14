@@ -33,6 +33,7 @@ class Board extends React.Component {
     super(props);
     this.state = {
       squares: Array(9).fill(null),
+      xIsNext: true, // boolean flips to determine which player goes next
     };
   }
 
@@ -42,8 +43,11 @@ class Board extends React.Component {
   // and reuse them late
   handleClick(i) {
     const squares = this.state.squares.slice();
-    squares[i] = 'X';
-    this.setState({squares: squares});
+    squares[i] = this.state.xIsNext ? 'X' : 'O'; // check if X is next or not
+    this.setState({
+      squares: squares,
+      xIsNext: !this.state.xIsNext, // simple flip boolean
+    });
   }
 
   /**
