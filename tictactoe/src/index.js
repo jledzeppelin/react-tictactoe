@@ -74,6 +74,10 @@ class Board extends React.Component {
  * we want the top-level Game component to display a list of past moves
  * here we store the history state
  * by having the history state in Game we can remove the squares state in Board
+ * 
+ * 
+ * 
+ * To render multiple items in React we can use an array of React elements
  */
 class Game extends React.Component {
   //set up initial state
@@ -83,6 +87,7 @@ class Game extends React.Component {
       history: [{
         squares: Array(9).fill(null),
       }],
+      stepNumber: 0, // to indicate which step we're currently viewing
       xIsNext: true,
     };
   }
@@ -94,7 +99,8 @@ class Game extends React.Component {
   // why copy? avoiding direct mutation lets us keep previous versions of the game's history intact
   // and reuse them later
   handleClick(i) {
-    const history = this.state.history;
+    // to ensure that if we go back in time and then make a new move we throw away the "future" history
+    const history = this.state.history.slice(0, this.state.stepNumber + 1);
     const current = history[history.length - 1];
     const squares = current.squares.slice();
 
@@ -109,7 +115,16 @@ class Game extends React.Component {
       history: history.concat([{
         squares: squares,
       }]),
+      stepNumber: history.length,
       xIsNext: !this.state.xIsNext,
+    });
+  }
+
+  // jumpTo() updates the stepNumber
+  jumpTo(step) {
+    this.setState({
+      stepNumber: step,
+      xIsNext: (step % 2) === 0, // since x always starts we know that x is next if the step number is even
     });
   }
 
@@ -117,8 +132,26 @@ class Game extends React.Component {
   //use the most recent history entry to determine and display the game's status
   render() {
     const history = this.state.history; // history struct: array
-    const current = history[history.length - 1]; //get most recent move
+    const current = history[this.state.stepNumber]; // the current selected move according to stepNumber
     const winner = calculateWinner(current.squares);
+
+
+    // map the history of moves to react elements
+    // in the history, each move has a unique id and since the moves are sequential it is
+    // safe to use the move index as a key
+    const moves = history.map((step, move) => {
+      const desc = move ? 
+        'Go to move #' + move :
+        'Go to game start';
+
+      // for each move in the game's history we create a list item with a button
+      // with onclick handler to call jumpTo()
+      return (
+        <li key={move}>
+          <button onClick={() => this.jumpTo(move)}>{desc}</button>
+        </li>
+      )
+    })
 
     let status;
     if (winner) {
@@ -140,7 +173,7 @@ class Game extends React.Component {
         </div>
         <div className="game-info">
           <div>{status}</div>
-          <ol>{/* TODO */}</ol>
+          <ol>{moves}</ol>
         </div>
       </div>
     );
