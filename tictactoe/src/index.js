@@ -11,13 +11,6 @@ import './index.css';
  * a subclass, react component classes with constructor should start with super(props)
  */
 class Square extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      value: null,
-    };
-  }
-
   // render a single button
   render() {
     {/*by calling this.setState from the onclick handler, react
@@ -26,17 +19,49 @@ class Square extends React.Component {
     return (
       <button 
         className="square" 
-        onClick={() => this.setState({value: 'X'})}
+        onClick={() => this.props.onClick()}
       >
-        {this.state.value}
+        {this.props.value}
       </button>
     );
   }
 }
 
+/**
+ * To determine winner we need to know the game's state, we should store
+ * the game's state in the parent Board component instead of in each square
+ * 
+ * To collect data from children we need to declare the shared state in their parent
+ * component. the parent can pass the state back down using props
+ */
 class Board extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      squares: Array(9).fill(null),
+    };
+  }
+
+  // handleClick(): fills the square i in the array defined in the constructor with 'X'
+  handleClick(i) {
+    const squares = this.state.squares.slice();
+    squares[i] = 'X';
+    this.setState({squares: squares});
+  }
+
+  /**
+   * Since state is private to a component that defines it we cannot update Board from Square
+   * Instead, pass down function from Board and have Square call that function when square is cliked
+   * 
+   * onClick prop is a function that Square can call when clicked
+   */
   renderSquare(i) {
-    return <Square value={i} />; // pass a prop called value to square
+    return (
+      <Square
+        value={this.state.squares[i]}
+        onClick={() => this.handleClick(i)}
+      />
+    );
   }
 
   // the squares are buttons
